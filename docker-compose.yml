@@ -1,0 +1,25 @@
+services:
+  # Zoho Sprints MCP Server
+  zoho-sprints-mcp-server:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    environment:
+      - LOG_LEVEL=INFO
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ZOHO_CLIENT_ID=1000.OY8GE20Q9XSG2ICLYBZMPC7XTYCO4U
+      - ZOHO_CLIENT_SECRET=ebfc6e0284c797d97c4267c34c0f7048eaadc1ce08
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
+      - ./tests:/app/tests
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    command: python src/main.py  # Launches HTTP server by default
