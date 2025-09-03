@@ -227,50 +227,30 @@ class StreamableHttpMCPServer:
             },
             {
                 "name": "get_items",
-                "description": "Get items (stories, tasks, bugs) for a project or sprint",
+                "description": "Get items (stories, tasks, bugs) for a project sprint or backlog",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "project_id": {"type": "string", "description": "Project ID"},
-                        "sprint_id": {"type": "string", "description": "Sprint ID (optional)"}
+                        "sprint_id_or_backlog_id": {"type": "string", "description": "Sprint ID or Backlog ID (required)"}
                     },
-                    "required": ["project_id"]
+                    "required": ["project_id", "sprint_id_or_backlog_id"]
                 }
             },
             {
                 "name": "get_item",
-                "description": "Get a specific item by ID",
+                "description": "Get a specific item by ID from a project sprint or backlog",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
                         "project_id": {"type": "string", "description": "Project ID"},
+                        "sprint_id_or_backlog_id": {"type": "string", "description": "Sprint ID or Backlog ID (required)"},
                         "item_id": {"type": "string", "description": "Item ID"}
                     },
-                    "required": ["project_id", "item_id"]
+                    "required": ["project_id", "sprint_id_or_backlog_id", "item_id"]
                 }
             },
-            {
-                "name": "get_users",
-                "description": "Get all users for a project",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "project_id": {"type": "string", "description": "Project ID"}
-                    },
-                    "required": ["project_id"]
-                }
-            },
-            {
-                "name": "get_user",
-                "description": "Get a specific user by ID",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "user_id": {"type": "string", "description": "User ID"}
-                    },
-                    "required": ["user_id"]
-                }
-            },
+
             {
                 "name": "get_epics",
                 "description": "Get all epics for a project",
@@ -292,29 +272,6 @@ class StreamableHttpMCPServer:
                         "epic_id": {"type": "string", "description": "Epic ID"}
                     },
                     "required": ["project_id", "epic_id"]
-                }
-            },
-            {
-                "name": "get_releases",
-                "description": "Get all releases for a project",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "project_id": {"type": "string", "description": "Project ID"}
-                    },
-                    "required": ["project_id"]
-                }
-            },
-            {
-                "name": "get_release",
-                "description": "Get a specific release by ID",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "project_id": {"type": "string", "description": "Project ID"},
-                        "release_id": {"type": "string", "description": "Release ID"}
-                    },
-                    "required": ["project_id", "release_id"]
                 }
             }
         ]
@@ -437,33 +394,20 @@ class StreamableHttpMCPServer:
                 
             elif tool_name == "get_items":
                 project_id = tool_args.get("project_id")
-                sprint_id = tool_args.get("sprint_id")
-                if not project_id:
-                    return {"error": "project_id is required"}
-                items = await self.zoho_service.get_items(project_id, sprint_id)
+                sprint_id_or_backlog_id = tool_args.get("sprint_id_or_backlog_id")
+                if not project_id or not sprint_id_or_backlog_id:
+                    return {"error": "project_id and sprint_id_or_backlog_id are required"}
+                items = await self.zoho_service.get_items(project_id, sprint_id_or_backlog_id)
                 return {"items": items, "count": len(items)}
                 
             elif tool_name == "get_item":
                 project_id = tool_args.get("project_id")
+                sprint_id_or_backlog_id = tool_args.get("sprint_id_or_backlog_id")
                 item_id = tool_args.get("item_id")
-                if not project_id or not item_id:
-                    return {"error": "project_id and item_id are required"}
-                item = await self.zoho_service.get_item(project_id, item_id)
+                if not project_id or not sprint_id_or_backlog_id or not item_id:
+                    return {"error": "project_id, sprint_id_or_backlog_id, and item_id are required"}
+                item = await self.zoho_service.get_item(project_id, sprint_id_or_backlog_id, item_id)
                 return {"item": item} if item else {"error": "Item not found"}
-                
-            elif tool_name == "get_users":
-                project_id = tool_args.get("project_id")
-                if not project_id:
-                    return {"error": "project_id is required"}
-                users = await self.zoho_service.get_users(project_id)
-                return {"users": users, "count": len(users)}
-                
-            elif tool_name == "get_user":
-                user_id = tool_args.get("user_id")
-                if not user_id:
-                    return {"error": "user_id is required"}
-                user = await self.zoho_service.get_user(user_id)
-                return {"user": user} if user else {"error": "User not found"}
                 
             elif tool_name == "get_epics":
                 project_id = tool_args.get("project_id")
@@ -479,21 +423,6 @@ class StreamableHttpMCPServer:
                     return {"error": "project_id and epic_id are required"}
                 epic = await self.zoho_service.get_epic(project_id, epic_id)
                 return {"epic": epic} if epic else {"error": "Epic not found"}
-                
-            elif tool_name == "get_releases":
-                project_id = tool_args.get("project_id")
-                if not project_id:
-                    return {"error": "project_id is required"}
-                releases = await self.zoho_service.get_releases(project_id)
-                return {"releases": releases, "count": len(releases)}
-                
-            elif tool_name == "get_release":
-                project_id = tool_args.get("project_id")
-                release_id = tool_args.get("release_id")
-                if not project_id or not release_id:
-                    return {"error": "project_id and release_id are required"}
-                release = await self.zoho_service.get_release(project_id, release_id)
-                return {"release": release} if release else {"error": "Release not found"}
                 
             else:
                 return {"error": f"Unknown tool: {tool_name}"}

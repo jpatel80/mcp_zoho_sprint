@@ -23,7 +23,7 @@ class Settings:
     ZOHO_SPRINTS_BASE_URL: str = "https://sprintsapi.zoho.com/zsapi/team/870567727"
     
     # OAuth Scopes - trying Zoho Sprints specific scope
-    ZOHO_SCOPES: str = "ZohoSprints.teams.READ,ZohoSprints.projects.READ,ZohoSprints.sprints.READ"  # Using ZohoProjects scope which might work for Sprints
+    ZOHO_SCOPES: str = "ZohoSprints.teams.READ,ZohoSprints.projects.READ,ZohoSprints.sprints.READ,ZohoSprints.items.READ,ZohoSprints.epic.READ"  # Using ZohoProjects scope which might work for Sprints
     
     @classmethod
     def validate(cls) -> bool:

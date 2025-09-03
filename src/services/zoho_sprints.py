@@ -159,34 +159,50 @@ class ZohoSprintsService:
             logger.error(f"Error fetching sprint {sprint_id}: {str(e)}")
             return None
     
-    async def get_items(self, project_id: str, sprint_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        """Get items (stories, tasks, bugs) for a project or sprint."""
+    async def get_items(self, project_id: str, sprint_id_or_backlog_id: str) -> List[Dict[str, Any]]:
+        """Get items from a project in Zoho Sprints.
+        
+        Args:
+            project_id: The ID of the project (required)
+            sprint_id_or_backlog_id: The ID of the sprint or backlog (required)
+            
+        Returns:
+            List of items from the project/sprint/backlog
+        """
         try:
             if not await self._ensure_authenticated():
                 return []
             
-            if sprint_id:
-                url = f"{self.base_url}/projects/{project_id}/sprints/{sprint_id}/items"
-            else:
-                url = f"{self.base_url}/projects/{project_id}/items"
+            # Build URL with mandatory parameters per Zoho Sprints API docs
+            url = f"{self.base_url}/projects/{project_id}/sprints/{sprint_id_or_backlog_id}/item/?action=data&index=1&range=100"
             
-            response = requests.get(url, headers=self._get_headers())
+            headers = self._get_headers()
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
             
-            data = response.json()
-            return data.get("items", [])
+            return response.json()
             
         except Exception as e:
             logger.error(f"Error fetching items: {str(e)}")
             return []
     
-    async def get_item(self, project_id: str, item_id: str) -> Optional[Dict[str, Any]]:
-        """Get a specific item by ID."""
+    async def get_item(self, project_id: str, sprint_id_or_backlog_id: str, item_id: str) -> Optional[Dict[str, Any]]:
+        """Get a specific item by ID from Zoho Sprints.
+        
+        Args:
+            project_id: The ID of the project (required)
+            sprint_id_or_backlog_id: The ID of the sprint or backlog (required)
+            item_id: The ID of the item (required)
+            
+        Returns:
+            Item details or None if not found
+        """
         try:
             if not await self._ensure_authenticated():
                 return None
             
-            url = f"{self.base_url}/projects/{project_id}/items/{item_id}"
+            # Build URL with mandatory parameters per Zoho Sprints API docs
+            url = f"{self.base_url}/projects/{project_id}/sprints/{sprint_id_or_backlog_id}/item/{item_id}/?action=details"
             response = requests.get(url, headers=self._get_headers())
             response.raise_for_status()
             
@@ -195,64 +211,48 @@ class ZohoSprintsService:
         except Exception as e:
             logger.error(f"Error fetching item {item_id}: {str(e)}")
             return None
+        
     
-    async def get_users(self, project_id: str) -> List[Dict[str, Any]]:
-        """Get all users for a project."""
+    async def get_epics(self, project_id: str) -> List[Dict[str, Any]]:
+        """Get all epics for a project from Zoho Sprints.
+        
+        Args:
+            project_id: The ID of the project (required)
+            
+        Returns:
+            List of epics from the project
+        """
         try:
             if not await self._ensure_authenticated():
                 return []
             
-            url = f"{self.base_url}/projects/{project_id}/users"
-            response = requests.get(url, headers=self._get_headers())
-            response.raise_for_status()
-            
-            data = response.json()
-            return data.get("users", [])
-            
-        except Exception as e:
-            logger.error(f"Error fetching users for project {project_id}: {str(e)}")
-            return []
-    
-    async def get_user(self, user_id: str) -> Optional[Dict[str, Any]]:
-        """Get a specific user by ID."""
-        try:
-            if not await self._ensure_authenticated():
-                return None
-            
-            url = f"{self.base_url}/users/{user_id}"
+            # Build URL with mandatory parameters per Zoho Sprints API docs
+            url = f"{self.base_url}/projects/{project_id}/epic/?action=data&index=1&range=100"
             response = requests.get(url, headers=self._get_headers())
             response.raise_for_status()
             
             return response.json()
             
         except Exception as e:
-            logger.error(f"Error fetching user {user_id}: {str(e)}")
-            return None
-    
-    async def get_epics(self, project_id: str) -> List[Dict[str, Any]]:
-        """Get all epics for a project."""
-        try:
-            if not await self._ensure_authenticated():
-                return []
-            
-            url = f"{self.base_url}/projects/{project_id}/epics"
-            response = requests.get(url, headers=self._get_headers())
-            response.raise_for_status()
-            
-            data = response.json()
-            return data.get("epics", [])
-            
-        except Exception as e:
             logger.error(f"Error fetching epics for project {project_id}: {str(e)}")
             return []
     
     async def get_epic(self, project_id: str, epic_id: str) -> Optional[Dict[str, Any]]:
-        """Get a specific epic by ID."""
+        """Get a specific epic by ID from Zoho Sprints.
+        
+        Args:
+            project_id: The ID of the project (required)
+            epic_id: The ID of the epic (required)
+            
+        Returns:
+            Epic details or None if not found
+        """
         try:
             if not await self._ensure_authenticated():
                 return None
             
-            url = f"{self.base_url}/projects/{project_id}/epics/{epic_id}"
+            # Build URL with mandatory parameters per Zoho Sprints API docs
+            url = f"{self.base_url}/projects/{project_id}/epic/{epic_id}/?action=details"
             response = requests.get(url, headers=self._get_headers())
             response.raise_for_status()
             
@@ -260,37 +260,4 @@ class ZohoSprintsService:
             
         except Exception as e:
             logger.error(f"Error fetching epic {epic_id}: {str(e)}")
-            return None
-    
-    async def get_releases(self, project_id: str) -> List[Dict[str, Any]]:
-        """Get all releases for a project."""
-        try:
-            if not await self._ensure_authenticated():
-                return []
-            
-            url = f"{self.base_url}/projects/{project_id}/releases"
-            response = requests.get(url, headers=self._get_headers())
-            response.raise_for_status()
-            
-            data = response.json()
-            return data.get("releases", [])
-            
-        except Exception as e:
-            logger.error(f"Error fetching releases for project {project_id}: {str(e)}")
-            return []
-    
-    async def get_release(self, project_id: str, release_id: str) -> Optional[Dict[str, Any]]:
-        """Get a specific release by ID."""
-        try:
-            if not await self._ensure_authenticated():
-                return None
-            
-            url = f"{self.base_url}/projects/{project_id}/releases/{release_id}"
-            response = requests.get(url, headers=self._get_headers())
-            response.raise_for_status()
-            
-            return response.json()
-            
-        except Exception as e:
-            logger.error(f"Error fetching release {release_id}: {str(e)}")
             return None

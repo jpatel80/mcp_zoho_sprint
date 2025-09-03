@@ -114,8 +114,7 @@ class TestZohoSprintsStreamableHttpMCPServer:
         # Check that all expected Zoho Sprints tools are present
         expected_tools = [
             "get_projects", "get_project", "get_sprints", "get_sprint",
-            "get_items", "get_item", "get_users", "get_user",
-            "get_epics", "get_epic", "get_releases", "get_release"
+            "get_items", "get_item", "get_epics", "get_epic"
         ]
         
         tool_names = [tool["name"] for tool in tools]

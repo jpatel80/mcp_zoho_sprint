@@ -34,17 +34,22 @@ A Model Context Protocol (MCP) server that integrates with Zoho Sprints API to p
    export ZOHO_CLIENT_SECRET="your_client_secret_here"
    ```
 
-### 2. Clone and Deploy
+### 2. Start the Server
 
+**Using Make (Recommended)**:
 ```bash
 git clone <repository-url>
 cd mcp_zoho_sprint
 make setup
+make start
 ```
 
-**Or manually:**
+**Or manually**:
 ```bash
-docker compose up --build -d
+# Copy and configure environment variables
+cp .env.example .env
+# Edit .env with your Zoho credentials
+docker compose --env-file .env up --build -d
 ```
 
 ### 3. Verify Server is Running
@@ -79,7 +84,8 @@ This MCP server uses **StreamableHttp transport** for HTTP-based communication:
 
 1. **Using Docker (Recommended)**:
    ```bash
-   docker compose up zoho-sprints-mcp-server -d
+   # Ensure .env file is configured with your Zoho credentials
+   docker compose --env-file .env up zoho-sprints-mcp-server -d
    ```
 
 2. **Or manually**:
@@ -119,10 +125,10 @@ The server will automatically start in HTTP mode on port 8000.
 
 ## Available Tools
 
-The MCP server provides the following tools for interacting with Zoho Sprints:
+The Zoho Sprints MCP Server provides the following tools:
 
 ### Project Management
-- **`get_projects`**: Retrieve all projects
+- **`get_projects`**: Get all projects from Zoho Sprints
 - **`get_project`**: Get a specific project by ID
 
 ### Sprint Management
@@ -130,20 +136,12 @@ The MCP server provides the following tools for interacting with Zoho Sprints:
 - **`get_sprint`**: Get a specific sprint by ID
 
 ### Item Management
-- **`get_items`**: Get items (stories, tasks, bugs) for a project or sprint
-- **`get_item`**: Get a specific item by ID
-
-### User Management
-- **`get_users`**: Get all users for a project
-- **`get_user`**: Get a specific user by ID
+- **`get_items`**: Get items (stories, tasks, bugs) for a project sprint or backlog
+- **`get_item`**: Get a specific item by ID from a project sprint or backlog
 
 ### Epic Management
 - **`get_epics`**: Get all epics for a project
 - **`get_epic`**: Get a specific epic by ID
-
-### Release Management
-- **`get_releases`**: Get all releases for a project
-- **`get_release`**: Get a specific release by ID
 
 ## API Documentation
 
