@@ -8,7 +8,6 @@ import requests
 from typing import Dict, Any, List, Optional
 from datetime import datetime, timedelta
 import json
-from src.config.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,37 +15,36 @@ logger = logging.getLogger(__name__)
 class ZohoSprintsService:
     """Service class for interacting with Zoho Sprints API."""
     
-    def __init__(self):
-        """Initialize the Zoho Sprints service."""
-        # Validate configuration
-        settings.validate()
+    def __init__(self, client_id: str, client_secret: str, auth_url: str, base_url: str, scopes: str):
         
-        self.client_id = settings.ZOHO_CLIENT_ID
-        self.client_secret = settings.ZOHO_CLIENT_SECRET
+        """Initialize the Zoho Sprints service."""
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.access_token = None
         self.refresh_token = None
         self.token_expires_at = None
-        self.base_url = settings.ZOHO_SPRINTS_BASE_URL
+        self.base_url = base_url
+        self.auth_url = auth_url
+        self.base_url = base_url
+        self.scopes = scopes
         
     async def authenticate(self) -> bool:
         """Authenticate with Zoho Sprints API using client credentials."""
         try:
-            # Zoho uses OAuth 2.0 with client credentials flow
-            auth_url = settings.ZOHO_AUTH_URL
-            
+            # Zoho uses OAuth 2.0 with client credentials flow            
             auth_data = {
                 "client_id": self.client_id,
                 "client_secret": self.client_secret,
                 "grant_type": "client_credentials",
-                "scope": settings.ZOHO_SCOPES
+                "scope": self.scopes
             }
             
             logger.info(f"Attempting authentication with Zoho...")
-            logger.info(f"Auth URL: {auth_url}")
+            logger.info(f"Auth URL: {self.auth_url}")
             logger.info(f"Client ID: {self.client_id[:10]}...")
-            logger.info(f"Scope: {settings.ZOHO_SCOPES}")
+            logger.info(f"Scope: {self.scopes}")
             
-            response = requests.post(auth_url, data=auth_data)
+            response = requests.post(self.auth_url, data=auth_data)
             logger.info(f"Auth response status: {response.status_code}")
             logger.info(f"Auth response: {response.text[:500]}")
             

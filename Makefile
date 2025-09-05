@@ -36,19 +36,13 @@ setup: build start verify
 # Build the Docker container
 build:
 	@echo "🔨 Building Docker container..."
-	@if [ ! -f .env ]; then \
-		echo "⚠️  Warning: .env file not found. Please copy .env.example to .env and configure your Zoho credentials."; \
-		echo "   cp .env.example .env"; \
-		echo "   # Edit .env with your ZOHO_CLIENT_ID and ZOHO_CLIENT_SECRET"; \
-		exit 1; \
-	fi
-	docker compose --env-file .env build
+	docker compose build
 	@echo "✅ Build complete"
 
 # Start the MCP server container
 start:
 	@echo "🚀 Starting MCP server container..."
-	docker compose --env-file .env up -d
+	docker compose up -d
 	@echo "✅ Container started"
 
 # Stop the MCP server container

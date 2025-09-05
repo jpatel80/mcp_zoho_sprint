@@ -71,26 +71,33 @@ class StreamableHttpMCPServer:
             }
         
         @self.app.post("/mcp")
-        async def handle_mcp_request(request: MCPRequest):
+        async def handle_mcp_request(client_id: str, client_secret: str, auth_url: str, base_url: str, scopes: str, request: MCPRequest):
             """Handle MCP requests via HTTP POST."""
             try:
-                response = await self.process_mcp_request(request)
+                credentials = {
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "auth_url": auth_url,
+                    "base_url": base_url,
+                    "scopes": scopes
+                }
+                response = await self.process_mcp_request(credentials, request)
                 return response
             except Exception as e:
                 logger.error(f"Error processing MCP request: {str(e)}")
                 raise HTTPException(status_code=500, detail=str(e))
     
-    async def process_mcp_request(self, request: MCPRequest) -> Dict[str, Any]:
+    async def process_mcp_request(self, credentials: Dict[str, Any], request: MCPRequest) -> Dict[str, Any]:
         """Process MCP requests."""
         method = request.method
         params = request.params or {}
         request_id = request.id
         
         logger.info(f"Processing MCP request: {method}")
-        
+
         try:
             if method == "initialize":
-                return await self.handle_initialize(params, request_id)
+                return await self.handle_initialize(credentials, params, request_id)
             elif method == "notifications/initialized":
                 logger.info("Received initialization notification")
                 return {"jsonrpc": "2.0", "id": request_id}
@@ -120,13 +127,19 @@ class StreamableHttpMCPServer:
                 }
             }
     
-    async def handle_initialize(self, params: Dict[str, Any], request_id: int) -> Dict[str, Any]:
+    async def handle_initialize(self, credentials: Dict[str, Any], params: Dict[str, Any], request_id: int) -> Dict[str, Any]:
         """Handle initialize request and authenticate with Zoho Sprints."""
         logger.info("Initializing Zoho Sprints MCP server")
         
         try:
             # Initialize Zoho Sprints service
-            self.zoho_service = ZohoSprintsService()
+            self.zoho_service = ZohoSprintsService(
+                client_id=credentials["client_id"], 
+                client_secret=credentials["client_secret"], 
+                auth_url=credentials["auth_url"], 
+                base_url=credentials["base_url"], 
+                scopes=credentials["scopes"]
+            )
             
             # Authenticate with Zoho Sprints
             auth_success = await self.zoho_service.authenticate()
@@ -134,13 +147,6 @@ class StreamableHttpMCPServer:
                 raise Exception("Failed to authenticate with Zoho Sprints API")
             
             self.initialized = True
-            logger.info("Successfully initialized and authenticated with Zoho Sprints")
-            logger.info(f"Zoho Sprints access token: {self.zoho_service.access_token}")
-            logger.info(f"Zoho Sprints refresh token: {self.zoho_service.refresh_token}")
-            logger.info(f"Zoho Sprints token expires at: {self.zoho_service.token_expires_at}")
-            logger.info(f"Zoho Sprints base URL: {self.zoho_service.base_url}")
-            logger.info(f"Zoho Sprints client ID: {self.zoho_service.client_id}")
-            logger.info(f"Zoho Sprints client secret: {self.zoho_service.client_secret}")
 
             # Use the client's protocol version if available, otherwise default to 2024-11-05
             client_protocol_version = params.get("protocolVersion", "2024-11-05")

@@ -8,8 +8,6 @@ services:
       - LOG_LEVEL=INFO
       - HOST=0.0.0.0
       - PORT=8000
-      - ZOHO_CLIENT_ID=${ZOHO_CLIENT_ID}
-      - ZOHO_CLIENT_SECRET=${ZOHO_CLIENT_SECRET}
     ports:
       - "8000:8000"
     volumes:

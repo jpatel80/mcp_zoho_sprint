@@ -28,10 +28,9 @@ A Model Context Protocol (MCP) server that integrates with Zoho Sprints API to p
    - Create a new client application
    - Note your `client_id` and `client_secret`
 
-2. **Set Environment Variables**:
+2. **Format your URL**:
    ```bash
-   export ZOHO_CLIENT_ID="your_client_id_here"
-   export ZOHO_CLIENT_SECRET="your_client_secret_here"
+   http://localhost:8000/mcp?client_id={CLIENT_ID}&client_secret={CLIET_SECRET}&auth_url={ENCODED_AUTH_URL}&base_url={ENCODED_BASE_URL/team/YOUR_TeAM_ID}&scopes={COMMA_SEPERATED_SCOPE}
    ```
 
 ### 2. Start the Server
@@ -46,10 +45,7 @@ make start
 
 **Or manually**:
 ```bash
-# Copy and configure environment variables
-cp .env.example .env
-# Edit .env with your Zoho credentials
-docker compose --env-file .env up --build -d
+docker compose up --build -d
 ```
 
 ### 3. Verify Server is Running
@@ -84,8 +80,7 @@ This MCP server uses **StreamableHttp transport** for HTTP-based communication:
 
 1. **Using Docker (Recommended)**:
    ```bash
-   # Ensure .env file is configured with your Zoho credentials
-   docker compose --env-file .env up zoho-sprints-mcp-server -d
+   docker compose up zoho-sprints-mcp-server -d
    ```
 
 2. **Or manually**:
@@ -113,8 +108,8 @@ The server will automatically start in HTTP mode on port 8000.
    {
      "mcpServers": {
        "zoho-sprints": {
-         "command": "mcp-remote",
-         "args": ["http://localhost:8000/mcp"],
+         "command": "npx",
+         "args": ["mcp-remote", "http://localhost:8000/mcp?client_id={YOUR_CLIENT_ID}&client_secret={YOUR_CLIENT_SECRET}&auth_url=https%3A%2F%2Faccounts.zoho.com%2Foauth%2Fv2%2Ftoken&base_url=https%3A%2F%2Fsprintsapi.zoho.com%2Fzsapi%2Fteam%{YOUR_TEAM_ID}&scopes=ZohoSprints.teams.READ,ZohoSprints.projects.READ,ZohoSprints.sprints.READ,ZohoSprints.items.READ,ZohoSprints.epic.READ"],
          "env": {}
        }
      }
@@ -197,8 +192,6 @@ docker compose exec zoho-sprints-mcp-server python -m flake8 src/
 
 | Variable | Description | Required | Default |
 |----------|-------------|----------|---------|
-| `ZOHO_CLIENT_ID` | Zoho OAuth client ID | Yes | - |
-| `ZOHO_CLIENT_SECRET` | Zoho OAuth client secret | Yes | - |
 | `HOST` | Server host | No | `0.0.0.0` |
 | `PORT` | Server port | No | `8000` |
 | `LOG_LEVEL` | Logging level | No | `INFO` |
